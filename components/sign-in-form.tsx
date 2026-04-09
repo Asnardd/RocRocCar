@@ -14,6 +14,8 @@ export function SignInForm() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [otpCode, setOtpCode] = React.useState('');
+  const [needs2FA, setNeeds2FA] = React.useState(false);
   const passwordInputRef = React.useRef<TextInput>(null);
   const [error, setError] = React.useState<{ email?: string; password?: string }>({});
 
@@ -36,7 +38,11 @@ export function SignInForm() {
         await setActive({ session: signInAttempt.createdSessionId });
         return;
       }
-      // TODO: Handle other statuses
+      if (signInAttempt.status === 'needs_second_factor') {
+        await signIn.prepareSecondFactor({ strategy: 'email_code' });
+        setNeeds2FA(true);
+        return;
+      }
       console.error(JSON.stringify(signInAttempt, null, 2));
     } catch (err) {
       // See https://go.clerk.com/mRUDrIe for more info on error handling
@@ -51,15 +57,77 @@ export function SignInForm() {
     }
   }
 
+  async function onVerifyOtp(){
+    if (!isLoaded) {
+      return;
+    }
+
+    try {
+      const result = await signIn.attemptSecondFactor({
+        strategy: 'email_code',
+        code: otpCode,
+      })
+
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        const isEmailMessage = (err.message.toLowerCase().includes('identifier') || err.message.toLowerCase().includes('email'));
+        setError(isEmailMessage ? { email: err.message } : { password: err.message });
+        return;
+      }
+      console.error(JSON.stringify(err, null, 2));
+    }
+  }
+
   function onEmailSubmitEditing() {
     passwordInputRef.current?.focus();
+  }
+
+  if (needs2FA) {
+    return (
+      <View className="gap-6">
+        <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
+          <CardHeader>
+            <CardTitle className="text-center text-xl sm:text-left">Two-factor authentication</CardTitle>
+            <CardDescription className="text-center sm:text-left">
+              Please enter the one-time password sent to your email.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="gap-6">
+            <View className="gap-6">
+              <View className="gap-1.5">
+                <Label htmlFor="otp">One-time password</Label>
+                <Input
+                  id="otp"
+                  placeholder="123456"
+                  keyboardType="number-pad"
+                  onChangeText={setOtpCode}
+                  onSubmitEditing={onVerifyOtp}
+                  returnKeyType="send"
+                  submitBehavior="submit"
+                  value=""
+                />
+                {error.password ? (
+                  <Text className="text-sm font-medium text-destructive">{error.password}</Text>
+                ) : null}
+              </View>
+              <Button className="w-full" onPress={onVerifyOtp}>
+                <Text>Continue</Text>
+              </Button>
+            </View>
+          </CardContent>
+        </Card>
+      </View>
+    )
   }
 
   return (
     <View className="gap-6">
       <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
         <CardHeader>
-          <CardTitle className="text-center text-xl sm:text-left">Sign in to RocRocMovie</CardTitle>
+          <CardTitle className="text-center text-xl sm:text-left">Sign in to RocRocCar</CardTitle>
           <CardDescription className="text-center sm:text-left">
             Welcome back! Please sign in to continue
           </CardDescription>
