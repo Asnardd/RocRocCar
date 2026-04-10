@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/clerk-expo": "^2.19.31",
     "@expo/ui": "~55.0.11",
+    "@gorhom/bottom-sheet": "^5.2.9",
     "@react-native-community/datetimepicker": "8.6.0",
     "@react-navigation/native": "^7.0.0",
     "@rn-primitives/avatar": "^1.4.0",
