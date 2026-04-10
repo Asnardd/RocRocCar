@@ -102,7 +102,7 @@ export function SignInForm() {
                 <Input
                   id="otp"
                   placeholder="123456"
-                  keyboardType="number-pad"
+                  // keyboardType="number-pad"
                   onChangeText={setOtpCode}
                   onSubmitEditing={onVerifyOtp}
                   returnKeyType="send"

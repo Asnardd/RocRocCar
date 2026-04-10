@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { UserMenu } from '@/components/user-menu';
+import ThemeToggle from '@/components/theme-toggle';
 
 export default function TabLayout() {
   return (
@@ -7,19 +9,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name={'index'}
         options={{
-          title: 'Home',
+          title: 'Trajets',
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name={'house'} color={color} />
+            <MaterialIcons size={28} name={'directions-car'} color={color} />
           ),
+          headerRight: () => <UserMenu />,
+          headerLeft: () => <ThemeToggle />,
         }}
       />
       <Tabs.Screen
-        name={'ride-form'}
+        name={'messages'}
         options={{
-          title: 'Create a Ride',
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name={'add-road'} color={color} />
-          ),
+          title: 'Messagerie',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name={'messenger'} color={color} />,
+          headerRight: () => <UserMenu />,
+          headerLeft: () => <ThemeToggle />,
         }}
       />
     </Tabs>
