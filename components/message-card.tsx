@@ -48,7 +48,7 @@ export function MessageCard({ message, sender }: { message: Message; sender?: Us
             paddingHorizontal: 16,
             paddingVertical: 8,
             backgroundColor: isMe ? '#6366f1' : '#333',
-            alignSelf: isMe ? 'flex-end' : 'flex-start', // ← clé pour la largeur
+            alignSelf: isMe ? 'flex-end' : 'flex-start',
           }}>
           <Text style={{ color: '#fff' }}>{message.text}</Text>
         </View>

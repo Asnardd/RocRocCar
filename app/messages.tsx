@@ -81,7 +81,9 @@ export default function Screen() {
       <ScrollView
         className="gap-4 p-4"
         ref={scrollViewRef}
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}> {/* TODO : Not working yet */}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
+        {/* TODO : Not working yet */}
         {messages.map((message) => (
           <MessageCard
             key={message.id}
