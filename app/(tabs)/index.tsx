@@ -1,5 +1,5 @@
 import { useUser } from '@clerk/clerk-expo';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { db } from '@/lib/firebase';
@@ -12,6 +12,7 @@ import { Text } from '@/components/ui/text';
 import { Column, Host, ModalBottomSheet, ModalBottomSheetRef, RNHostView, } from '@expo/ui/jetpack-compose';
 import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
 import { Ride, RideCard } from '@/components/ride-card';
+import { haversineDistanceKM } from '@/lib/distance';
 
 export default function Screen() {
   const [sheetVisibility, setSheetVisibility] = React.useState(false);
@@ -19,6 +20,9 @@ export default function Screen() {
   const sheetRef = React.useRef<ModalBottomSheetRef>(null);
   const { user } = useUser();
   const [location, setLocation] = React.useState<Location.LocationObject | null>(null);
+  const mapRef = React.useRef<MapView>(null);
+  const [selectedRideId, setSelectedRideId] = React.useState<string | null>(null);
+  const { selectedRideId: paramRideId } = useLocalSearchParams<{ selectedRideId: string }>();
   const insets = useSafeAreaInsets();
   const styles = StyleSheet.create({
     container: {
@@ -33,33 +37,13 @@ export default function Screen() {
     },
   });
 
-  // Formula taken from stackoverflow - https://stackoverflow.com/a/14561433
-  function haversineDistanceKM(ride: Ride, location: Location.LocationObject | null) {
-    function toRad(degree: number) {
-      return (degree * Math.PI) / 180;
-    }
-
-    const lat1 = toRad(location!.coords.latitude);
-    const lon1 = toRad(location!.coords.longitude);
-    const lat2 = toRad(ride.startingPoint.latitude);
-    const lon2 = toRad(ride.startingPoint.longitude);
-
-    const { sin, cos, sqrt, atan2 } = Math;
-
-    const R = 6371; // earth radius in km
-    const dLat = lat2 - lat1;
-    const dLon = lon2 - lon1;
-    const a = sin(dLat / 2) * sin(dLat / 2) + cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2);
-    const c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return R * c; // distance in km
-  }
-
   const hideSheet = async () => {
     await sheetRef.current?.hide();
     setSheetVisibility(false);
   };
 
   React.useEffect(() => {
+
     async function getCurrentLocation() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -110,6 +94,22 @@ export default function Screen() {
     getCurrentLocation();
   }, [location]);
 
+  React.useEffect(() => {
+    if (!paramRideId) return;
+    const ride = rides.find((ride) => ride.id === paramRideId);
+    if (!ride || !mapRef.current) return;
+    setSelectedRideId(paramRideId);
+    mapRef.current.animateToRegion(
+      {
+        latitude: ride.startingPoint.latitude,
+        longitude: ride.startingPoint.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      },
+      500
+    );
+  },[paramRideId,rides])
+
   return (
     <>
       {/*<Button className="absolute bottom-4 right-4" onPress={() => setSheetVisibility(true)}>*/}
@@ -118,6 +118,7 @@ export default function Screen() {
       <MapView
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
+        ref={mapRef}
         initialRegion={{
           latitude: 46.684734006166956,
           longitude: -1.419224168171691,
@@ -134,7 +135,7 @@ export default function Screen() {
         />
         {rides ? rides.map((ride) => (
           <MapMarker
-            pinColor={'purple'}
+            pinColor={ride.id == selectedRideId ? 'red' : 'green'}
             key={ride.id}
             title={ride.startingPoint.address}
             coordinate={{
@@ -181,7 +182,14 @@ export default function Screen() {
                   </View>
 
                   <View className="flex-row gap-3">
-                    <Button className="flex-1" variant="outline" onPress={() => {}}>
+                    <Button
+                      className="flex-1"
+                      variant="outline"
+                      onPress={() => {
+                        setSheetVisibility(false);
+                        router.push('/search-rides');
+                      }}
+                    >
                       <Text>Rechercher</Text>
                     </Button>
                     <Button

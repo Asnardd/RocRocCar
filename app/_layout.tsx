@@ -59,6 +59,7 @@ function Routes() {
       <Stack.Protected guard={isSignedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="propose" options={{ presentation: 'modal', title: 'Proposer un trajet'}} />
+        <Stack.Screen name="search-rides" options={{ presentation: 'modal', title: 'Rechercher un trajet'}} />
       </Stack.Protected>
 
       {/* Screens outside the guards are accessible to everyone (e.g. not found) */}

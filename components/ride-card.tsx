@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Timestamp } from 'firebase/firestore';
 
@@ -16,9 +16,9 @@ export type Ride = {
   };
 };
 
-export function RideCard({ ride, distance }: { ride: Ride; distance?: number }) {
+export function RideCard({ ride, distance, onPress }: { ride: Ride; distance?: number; onPress?: () => void }) {
   return (
-    <View className="gap-1 rounded-xl border border-border p-3">
+    <Pressable onPress={onPress} className="gap-1 rounded-xl border border-border p-3">
       <Text className="font-semibold">{ride.startingPoint.address}</Text>
       <Text className="text-sm text-muted-foreground">
         {ride.date.toLocaleString()} {distance ? `— ${distance.toFixed(2)} km de vous` : ''}
@@ -27,6 +27,6 @@ export function RideCard({ ride, distance }: { ride: Ride; distance?: number }) 
         {ride.seatsAvailable} place{ride.seatsAvailable > 1 ? 's' : ''} disponible
         {ride.seatsAvailable > 1 ? 's' : ''}
       </Text>
-    </View>
+    </Pressable>
   );
 }
