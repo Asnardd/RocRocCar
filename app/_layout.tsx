@@ -10,6 +10,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
+import { doc, setDoc } from '@firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useUser } from '@clerk/clerk-expo';
+
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -34,6 +38,7 @@ SplashScreen.preventAutoHideAsync();
 
 function Routes() {
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
 
   React.useEffect(() => {
     if (isLoaded) {
@@ -41,6 +46,18 @@ function Routes() {
     }
   }, [isLoaded]);
 
+  React.useEffect(() => {
+    if (!user) return;
+    setDoc(
+      doc(db, 'users', user.id),
+      {
+        name: user.fullName ?? user.username ?? 'Anonyme',
+        email: user.primaryEmailAddress?.emailAddress,
+      },
+      { merge: true }
+    );
+  }, [user]);
+  
   if (!isLoaded) {
     return null;
   }

@@ -13,6 +13,7 @@ import { Column, Host, ModalBottomSheet, ModalBottomSheetRef, RNHostView, } from
 import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
 import { Ride, RideCard } from '@/components/ride-card';
 import { haversineDistanceKM } from '@/lib/distance';
+import { rem } from 'nativewind';
 
 export default function Screen() {
   const [sheetVisibility, setSheetVisibility] = React.useState(false);
@@ -133,17 +134,19 @@ export default function Screen() {
             longitude: -1.419224168171691,
           }}
         />
-        {rides ? rides.map((ride) => (
-          <MapMarker
-            pinColor={ride.id == selectedRideId ? 'red' : 'green'}
-            key={ride.id}
-            title={ride.startingPoint.address}
-            coordinate={{
-              latitude: ride.startingPoint.latitude,
-              longitude: ride.startingPoint.longitude,
-            }}
-          />
-        )) : null}
+        {rides
+          ? rides.map((ride) => (
+              <MapMarker
+                pinColor={ride.id == selectedRideId ? 'red' : 'green'}
+                key={ride.id}
+                title={ride.startingPoint.address}
+                coordinate={{
+                  latitude: ride.startingPoint.latitude,
+                  longitude: ride.startingPoint.longitude,
+                }}
+              />
+            ))
+          : null}
       </MapView>
       <View className="absolute bottom-16 left-0 right-0 items-center">
         <Pressable
@@ -152,6 +155,19 @@ export default function Screen() {
           <View className="mb-2 h-1 w-10 rounded-full bg-muted-foreground" />
           <Text className="text-sm text-muted-foreground">Voir les trajets</Text>
         </Pressable>
+      </View>
+      <View className="absolute inset-0" pointerEvents={selectedRideId ? 'auto' : 'none'}>
+        {selectedRideId && (
+          <Pressable
+            className="absolute top-4 left-5 bg-background rounded-full px-4 py-2"
+            onPress={() => {
+              setSelectedRideId(null);
+              router.setParams({selectedRideId: undefined});
+            }}
+          >
+            <Text className="text-sm">✕ Arrêter le focus</Text>
+          </Pressable>
+        )}
       </View>
 
       <Host>
@@ -169,15 +185,20 @@ export default function Screen() {
                     {rides.length === 0 ? (
                       <Text className="text-sm text-muted-foreground">Aucun trajet disponible</Text>
                     ) : (
-                      rides
-                        .slice(0, 5)
-                        .map((ride) => (
-                          <RideCard
-                            key={ride.id}
-                            ride={ride}
-                            distance={haversineDistanceKM(ride, location)}
-                          />
-                        ))
+                      rides.slice(0, 5).map((ride) => (
+                        <RideCard
+                          key={ride.id}
+                          ride={ride}
+                          distance={haversineDistanceKM(ride, location)}
+                          onPress={() => {
+                            setSheetVisibility(false);
+                            router.navigate({
+                              pathname: '/(tabs)',
+                              params: { selectedRideId: ride.id },
+                            });
+                          }}
+                        />
+                      ))
                     )}
                   </View>
 
@@ -188,8 +209,7 @@ export default function Screen() {
                       onPress={() => {
                         setSheetVisibility(false);
                         router.push('/search-rides');
-                      }}
-                    >
+                      }}>
                       <Text>Rechercher</Text>
                     </Button>
                     <Button

@@ -87,8 +87,10 @@ export default function ProposeScreen() {
                 ride={ride}
                 distance={location ? haversineDistanceKM(ride, location) : undefined}
                 onPress={() => {
-                  router.dismiss()
-                  router.setParams({ selectedRideId: ride.id });
+                  router.navigate({
+                    pathname: '/(tabs)',
+                    params: { selectedRideId: ride.id }
+                  })
                 }}
               />
             ))}
