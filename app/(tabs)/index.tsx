@@ -13,7 +13,6 @@ import { Column, Host, ModalBottomSheet, ModalBottomSheetRef, RNHostView, } from
 import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
 import { Ride, RideCard } from '@/components/ride-card';
 import { haversineDistanceKM } from '@/lib/distance';
-import { rem } from 'nativewind';
 
 export default function Screen() {
   const [sheetVisibility, setSheetVisibility] = React.useState(false);
@@ -64,6 +63,7 @@ export default function Screen() {
       const rides = docs.docs.map((doc) => ({
         id: doc.id,
         createdAt: doc.data().createdAt.toDate(),
+        direction: doc.data().direction,
         driverId: doc.data().driverId,
         seats: doc.data().seats,
         seatsAvailable: doc.data().seatsAvailable,
@@ -137,7 +137,11 @@ export default function Screen() {
         {rides
           ? rides.map((ride) => (
               <MapMarker
-                pinColor={ride.id == selectedRideId ? 'red' : 'green'}
+                pinColor={
+                ride.id == selectedRideId ? 'red'
+                  : ride.direction === 'to_school' ? 'green'
+                  : 'blue'
+              }
                 key={ride.id}
                 title={ride.startingPoint.address}
                 coordinate={{

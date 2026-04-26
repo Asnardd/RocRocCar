@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 
 export type Ride = {
   id: string;
+  direction: string;
   createdAt: Timestamp;
   date: Timestamp;
   driverId: string;

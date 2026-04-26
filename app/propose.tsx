@@ -18,6 +18,8 @@ export default function ProposeScreen() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
   const { user } = useUser();
+  const [direction, setDirection] = React.useState<'to_school' | 'from_school'>('to_school');
+
 
   function openDatePicker() {
     DateTimePickerAndroid.open({
@@ -72,6 +74,20 @@ export default function ProposeScreen() {
 
   return (
     <ScrollView className="flex-1 p-4">
+      <View className="mb-5 mt-4 flex-row gap-3">
+        <Button
+          variant={direction == 'to_school' ? 'default' : 'outline'}
+          onPress={() => setDirection('to_school')}
+          className={'flex-1'}>
+          <Text>{'->'} Vers Le Roc</Text>
+        </Button>
+        <Button
+          variant={direction == 'from_school' ? 'default' : 'outline'}
+          onPress={() => setDirection('from_school')}
+          className={'flex-1'}>
+          <Text>{'<-'} Depuis Le Roc</Text>
+        </Button>
+      </View>
       <View className="gap-4">
         <View className="gap-1.5">
           <Label>Adresse de départ</Label>
