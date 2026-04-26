@@ -45,6 +45,7 @@ export default function ProposeScreen() {
       const docs = await getDocs(collection(db, 'rides'));
       const fetched = docs.docs.map((doc) => ({
         id: doc.id,
+        direction: doc.data().direction,
         createdAt: doc.data().createdAt.toDate(),
         driverId: doc.data().driverId,
         seats: doc.data().seats,

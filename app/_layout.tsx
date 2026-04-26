@@ -51,8 +51,9 @@ function Routes() {
     setDoc(
       doc(db, 'users', user.id),
       {
-        name: user.fullName ?? user.username ?? 'Anonyme',
+        name: user.username ?? user.fullName ?? 'Anonyme',
         email: user.primaryEmailAddress?.emailAddress,
+        avatar: user.imageUrl,
       },
       { merge: true }
     );
@@ -77,6 +78,7 @@ function Routes() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="propose" options={{ presentation: 'modal', title: 'Proposer un trajet'}} />
         <Stack.Screen name="search-rides" options={{ presentation: 'modal', title: 'Rechercher un trajet'}} />
+        <Stack.Screen name="messages" options={{ presentation: 'modal', title: 'Envoyer un message'}} />
       </Stack.Protected>
 
       {/* Screens outside the guards are accessible to everyone (e.g. not found) */}

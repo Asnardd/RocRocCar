@@ -4,6 +4,7 @@ import { getDoc, Timestamp } from 'firebase/firestore';
 import { doc } from '@firebase/firestore';
 import { db } from '@/lib/firebase';
 import React, { useState } from 'react';
+import { User } from 'components/user-card'
 
 export type Ride = {
   id: string;
@@ -20,12 +21,6 @@ export type Ride = {
   };
 };
 
-export type User = {
-  id: string;
-  email: string;
-  name: string;
-}
-
 async function getDriver(id: string): Promise<User | null> {
   const document = await getDoc(doc(db, 'users', id));
   if (!document.exists()) {
@@ -35,6 +30,7 @@ async function getDriver(id: string): Promise<User | null> {
     id: document.id,
     email: document.data().email,
     name: document.data().name,
+    avatar: document.data().avatar,
   };
 }
 

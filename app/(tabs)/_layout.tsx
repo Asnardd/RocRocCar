@@ -18,7 +18,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name={'messages'}
+        name={'user-list'}
         options={{
           title: 'Messagerie',
           tabBarIcon: ({ color }) => <MaterialIcons size={28} name={'messenger'} color={color} />,

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import MapView, { MapMarker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { MapMarker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { Column, Host, ModalBottomSheet, ModalBottomSheetRef, RNHostView, } from
 import { paddingAll } from '@expo/ui/jetpack-compose/modifiers';
 import { Ride, RideCard } from '@/components/ride-card';
 import { haversineDistanceKM } from '@/lib/distance';
+import { fetchRoute } from '@/lib/directions';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function Screen() {
   const [sheetVisibility, setSheetVisibility] = React.useState(false);
@@ -23,6 +25,12 @@ export default function Screen() {
   const mapRef = React.useRef<MapView>(null);
   const [selectedRideId, setSelectedRideId] = React.useState<string | null>(null);
   const { selectedRideId: paramRideId } = useLocalSearchParams<{ selectedRideId: string }>();
+  const [rideDuration, setRideDuration] = React.useState<string | null>(null);
+  const [toPickupDuration, setToPickupDuration] = React.useState<string | null>(null);
+  const [showDirections, setShowDirections] = React.useState(false);
+  const [rideCoords, setRideCoords] = React.useState<any[]>([]);
+  const [pickupCoords, setPickupCoords] = React.useState<any[]>([]);
+  const [mapKey, setMapKey] = React.useState('map-default');
   const insets = useSafeAreaInsets();
   const styles = StyleSheet.create({
     container: {
@@ -36,6 +44,7 @@ export default function Screen() {
       ...StyleSheet.absoluteFill,
     },
   });
+  const LE_ROC = { latitude: 46.684734006166956, longitude: -1.419224168171691 };
 
   const hideSheet = async () => {
     await sheetRef.current?.hide();
@@ -100,6 +109,7 @@ export default function Screen() {
     const ride = rides.find((ride) => ride.id === paramRideId);
     if (!ride || !mapRef.current) return;
     setSelectedRideId(paramRideId);
+    setShowDirections(true);
     mapRef.current.animateToRegion(
       {
         latitude: ride.startingPoint.latitude,
@@ -109,7 +119,24 @@ export default function Screen() {
       },
       500
     );
-  },[paramRideId,rides])
+
+    async function loadRoutes() {
+      const [rideRoute, pickupRoute] = await Promise.all([
+        fetchRoute(ride.startingPoint, LE_ROC),
+        location ? fetchRoute(location.coords, ride.startingPoint) : null,
+      ]);
+      if (rideRoute) {
+        setRideCoords(rideRoute.coords);
+        setRideDuration(rideRoute.duration);
+      }
+      if (pickupRoute) {
+        setPickupCoords(pickupRoute.coords);
+        setToPickupDuration(pickupRoute.duration);
+      }
+    }
+
+  loadRoutes();
+  }, [paramRideId, rides]);
 
   return (
     <>
@@ -117,6 +144,7 @@ export default function Screen() {
       {/*  <Text>Proposer</Text>*/}
       {/*</Button>*/}
       <MapView
+        key={mapKey}
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_GOOGLE}
         ref={mapRef}
@@ -127,21 +155,17 @@ export default function Screen() {
           longitudeDelta: 0.05,
         }}
         showsUserLocation>
-        <MapMarker
-          title="Notre Dame du Roc"
-          coordinate={{
-            latitude: 46.684734006166956,
-            longitude: -1.419224168171691,
-          }}
-        />
+        <MapMarker title="Notre Dame du Roc" coordinate={LE_ROC} />
         {rides
           ? rides.map((ride) => (
               <MapMarker
                 pinColor={
-                ride.id == selectedRideId ? 'red'
-                  : ride.direction === 'to_school' ? 'green'
-                  : 'blue'
-              }
+                  ride.id == selectedRideId
+                    ? 'red'
+                    : ride.direction === 'to_school'
+                      ? 'green'
+                      : 'blue'
+                }
                 key={ride.id}
                 title={ride.startingPoint.address}
                 coordinate={{
@@ -151,6 +175,36 @@ export default function Screen() {
               />
             ))
           : null}
+
+        {showDirections && rideCoords.length > 0 && (
+          <Polyline
+            coordinates={
+              showDirections && rideCoords.length > 0
+                ? rideCoords
+                : [
+                    { latitude: 0, longitude: 0 },
+                    { latitude: 0, longitude: 0 },
+                  ]
+            }
+            strokeColor={showDirections ? '#6366f1' : 'transparent'}
+            strokeWidth={4}
+          />
+        )}
+        {showDirections && pickupCoords.length > 0 && (
+          <Polyline
+            coordinates={
+              showDirections && pickupCoords.length > 0
+                ? pickupCoords
+                : [
+                    { latitude: 0, longitude: 0 },
+                    { latitude: 0, longitude: 0 },
+                  ]
+            }
+            strokeColor={showDirections ? '#f97316' : 'transparent'}
+            strokeWidth={3}
+            lineDashPattern={[6, 4]}
+          />
+        )}
       </MapView>
       <View className="absolute bottom-16 left-0 right-0 items-center">
         <Pressable
@@ -163,16 +217,38 @@ export default function Screen() {
       <View className="absolute inset-0" pointerEvents={selectedRideId ? 'auto' : 'none'}>
         {selectedRideId && (
           <Pressable
-            className="absolute top-4 left-5 bg-background rounded-full px-4 py-2"
+            className="absolute left-5 top-4 rounded-full bg-background px-4 py-2"
             onPress={() => {
               setSelectedRideId(null);
-              router.setParams({selectedRideId: undefined});
-            }}
-          >
+              setShowDirections(false);
+              setRideCoords([]);
+              setPickupCoords([]);
+              setRideDuration(null);
+              setToPickupDuration(null);
+              setMapKey(`map-${Date.now()}`);
+              router.setParams({ selectedRideId: undefined });
+            }}>
             <Text className="text-sm">✕ Arrêter le focus</Text>
           </Pressable>
         )}
       </View>
+
+      {selectedRideId && (rideDuration || toPickupDuration) && (
+        <View className="absolute left-2 right-0 top-16 gap-1 rounded-xl bg-background p-3">
+          {toPickupDuration && (
+            <Text className="text-sm">
+              <MaterialIcons size={16} name={'nordic-walking'} /> {toPickupDuration} jusqu'au point
+              de départ
+            </Text>
+          )}
+          {rideDuration && (
+            <Text className="text-sm">
+              <MaterialIcons size={16} name={'directions-car'} /> {toPickupDuration} {rideDuration}{' '}
+              vers Le Roc
+            </Text>
+          )}
+        </View>
+      )}
 
       <Host>
         {sheetVisibility && (
