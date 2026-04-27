@@ -10,6 +10,7 @@ import { useUser } from '@clerk/clerk-expo';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import Toast from 'react-native-toast-message';
 
 export default function ProposeScreen() {
   const [address, setAddress] = React.useState('');
@@ -53,6 +54,7 @@ export default function ProposeScreen() {
       await addDoc(collection(db, 'rides'), {
         date: Timestamp.fromDate(date),
         driverId: user?.id,
+        direction,
         seats,
         seatsAvailable: seats,
         startingPoint: {
@@ -64,6 +66,10 @@ export default function ProposeScreen() {
       });
       console.log('Trajet ajouté à Firestore');
       router.back()
+      Toast.show({
+        type: 'success',
+        text1: 'Trajet créer avec succès!'
+      })
     } catch (err) {
       setError('Erreur lors de la création du trajet');
       console.error(err);
@@ -121,6 +127,7 @@ export default function ProposeScreen() {
         <Button onPress={onSubmit} disabled={loading}>
           <Text>{loading ? 'Création...' : 'Proposer un trajet'}</Text>
         </Button>
+        <Text className={'text-red-500'}>{error}</Text>
       </View>
     </ScrollView>
   );

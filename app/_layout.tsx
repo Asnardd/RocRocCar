@@ -13,6 +13,8 @@ import * as React from 'react';
 import { doc, setDoc } from '@firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useUser } from '@clerk/clerk-expo';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from '@/lib/toast-config';
 
 
 export {
@@ -29,6 +31,7 @@ export default function RootLayout() {
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Routes />
         <PortalHost />
+        <Toast config={toastConfig} />
       </ThemeProvider>
     </ClerkProvider>
   );

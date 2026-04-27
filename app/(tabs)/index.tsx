@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDoc, getDocs } from 'firebase/firestore';
 import MapView, { MapMarker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,8 @@ import { Ride, RideCard } from '@/components/ride-card';
 import { haversineDistanceKM } from '@/lib/distance';
 import { fetchRoute } from '@/lib/directions';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { doc, setDoc } from '@firebase/firestore';
+import Toast from 'react-native-toast-message';
 
 export default function Screen() {
   const [sheetVisibility, setSheetVisibility] = React.useState(false);
@@ -30,6 +32,8 @@ export default function Screen() {
   const [showDirections, setShowDirections] = React.useState(false);
   const [rideCoords, setRideCoords] = React.useState<any[]>([]);
   const [pickupCoords, setPickupCoords] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
   const [mapKey, setMapKey] = React.useState('map-default');
   const insets = useSafeAreaInsets();
   const styles = StyleSheet.create({
@@ -50,6 +54,36 @@ export default function Screen() {
     await sheetRef.current?.hide();
     setSheetVisibility(false);
   };
+
+  async function subscribeToRide(rideId: string) {
+    try {
+      const rideDoc = await getDoc(doc(db, 'rides', rideId));
+      await addDoc(collection(db, 'rides', rideId, 'passengers'), {
+        userId: user?.id,
+        joinedAt: new Date(),
+      });
+      setDoc(
+        doc(db,'rides',rideId),
+        {
+          seatsAvailable:0
+        },
+        {merge:true}
+      );
+      Toast.show({
+        type: 'success',
+        text1: 'Vous êtes désormais inscrit à ce trajet!',
+        text2: 'Envoyez un message au conducteur pour vous préparer!'
+      })
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Une erreur s\'est produite lors de l\'inscription au trajet',
+        text2: error instanceof Error ? error.message : 'Veuillez réessayer plus tard'
+      })
+    } finally {
+      setLoading(false);
+    }
+  }
 
   React.useEffect(() => {
 
@@ -84,19 +118,14 @@ export default function Screen() {
         date: doc.data().date.toDate(),
       }));
 
+      const filtered = rides.filter((ride) => ride.seatsAvailable > 0); // Aussi ajouter "&& ride.date > new Date()" en prod, retirer actuellement pour les tests
+
       const sorted = location
-        ? rides.sort(
+        ? filtered.sort(
             (a: Ride, b: Ride) =>
-              haversineDistanceKM(
-                a,
-                location
-              ) -
-              haversineDistanceKM(
-                b,
-                location
-              )
+              haversineDistanceKM(a, location) - haversineDistanceKM(b, location)
           )
-        : rides;
+        : filtered;
       setRides(sorted);
     }
 
@@ -123,7 +152,7 @@ export default function Screen() {
     async function loadRoutes() {
       const [rideRoute, pickupRoute] = await Promise.all([
         fetchRoute(ride.startingPoint, LE_ROC),
-        location ? fetchRoute(location.coords, ride.startingPoint) : null,
+        location ? fetchRoute(location.coords, ride.startingPoint, 'walking') : null,
       ]);
       if (rideRoute) {
         setRideCoords(rideRoute.coords);
@@ -243,10 +272,26 @@ export default function Screen() {
           )}
           {rideDuration && (
             <Text className="text-sm">
-              <MaterialIcons size={16} name={'directions-car'} /> {toPickupDuration} {rideDuration}{' '}
-              vers Le Roc
+              <MaterialIcons size={16} name={'directions-car'} /> {rideDuration} vers Le Roc
             </Text>
           )}
+          <Button
+            className="w-lg self-center"
+            onPress={()=> {
+              setLoading(true);
+              subscribeToRide(selectedRideId)
+              setSelectedRideId(null);
+              setShowDirections(false);
+              setRideCoords([]);
+              setPickupCoords([]);
+              setRideDuration(null);
+              setToPickupDuration(null);
+              setLoading(false);
+              router.setParams({ selectedRideId: undefined });
+            }}
+          >
+          <Text>S'inscrire au trajet</Text>
+          </Button>
         </View>
       )}
 

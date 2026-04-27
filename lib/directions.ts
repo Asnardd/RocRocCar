@@ -4,11 +4,12 @@ type Coordinates = { latitude: number; longitude: number };
 
 export async function fetchRoute(
   origin: Coordinates,
-  destination: Coordinates
+  destination: Coordinates,
+  mode: 'driving' | 'walking' = 'driving'
 ): Promise<{ coords: Coordinates[]; duration: string } | null> {
   try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${process.env.EXPO_PUBLIC_MAPS_API_KEY}`
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=${mode}&key=${process.env.EXPO_PUBLIC_MAPS_API_KEY}`
     );
     const data = await response.json();
     if (!data.routes?.length) return null;
