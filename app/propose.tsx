@@ -90,15 +90,15 @@ export default function ProposeScreen() {
       </View>
       <View className="gap-4">
         <View className="gap-1.5">
-          <Label>Adresse de départ</Label>
+          <Label>Adresse {direction === 'to_school' ? 'de départ' : "d'arriver"}</Label>
           <Input
-            placeholder="Entrez l'adresse de départ"
+            placeholder="Ex: 123 rue de lyon, 69000 Lyon"
             value={address}
             onChangeText={setAddress}
           />
         </View>
         <View className="gap-1.5">
-          <Label>Date et heure de départ</Label>
+          <Label>Date et heure {direction === 'to_school' ? 'de départ' : "d'arriver"}</Label>
           <Button variant="outline" onPress={openDatePicker}>
             <Text>{date.toLocaleString('fr-FR')}</Text>
           </Button>

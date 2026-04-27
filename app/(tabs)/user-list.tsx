@@ -17,7 +17,6 @@ import { User } from 'components/user-card';
 import { UserCard } from '@/components/user-card';
 import { Label } from '@/components/ui/label';
 
-
 export default function Screen() {
   const { colorScheme } = useColorScheme();
   const { user } = useUser();
