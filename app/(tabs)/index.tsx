@@ -287,6 +287,7 @@ export default function Screen() {
               setRideDuration(null);
               setToPickupDuration(null);
               setLoading(false);
+              setMapKey(`map-${Date.now()}`);
               router.setParams({ selectedRideId: undefined });
             }}
           >
