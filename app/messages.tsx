@@ -35,7 +35,7 @@ export default function Screen() {
       messages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     );
   }
-
+  getMessages();
 
   async function sendMessage() {
     console.log('Sending...');
@@ -68,7 +68,6 @@ export default function Screen() {
       setRecipent(recipent);
     }
     getRecipent()
-    getMessages();
   }, [recipientUserId])
 
   React.useEffect(() => {

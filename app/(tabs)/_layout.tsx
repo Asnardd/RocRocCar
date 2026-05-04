@@ -18,6 +18,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name={'rides-list'}
+        options={{
+          title: 'Trajets suivi',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name={'list'} color={color} />,
+          headerRight: () => <UserMenu />,
+          headerLeft: () => <ThemeToggle />,
+        }}
+      />
+      <Tabs.Screen
         name={'user-list'}
         options={{
           title: 'Messagerie',

@@ -65,7 +65,7 @@ export default function Screen() {
       setDoc(
         doc(db,'rides',rideId),
         {
-          seatsAvailable:0
+          seatsAvailable: rideDoc.data()?.seatsAvailable - 1
         },
         {merge:true}
       );

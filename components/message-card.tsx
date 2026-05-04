@@ -14,7 +14,7 @@ export type Message = {
 export function MessageCard({ message, sender }: { message: Message; sender?: User }) {
   const { user } = useUser();
   const isMe = message.senderId === user?.id;
-  console.log('senderId:', message.senderId, 'userId:', user?.id);
+  // console.log('senderId:', message.senderId, 'userId:', user?.id);
 
 
   return (

@@ -19,6 +19,13 @@ export type Ride = {
     latitude: number;
     longitude: number;
   };
+  passengers?: Passenger[]
+};
+
+type Passenger = {
+  id: string;
+  userId: string;
+  joinedAt: Date;
 };
 
 async function getDriver(id: string): Promise<User | null> {
