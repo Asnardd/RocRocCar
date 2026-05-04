@@ -42,35 +42,35 @@ export function UserMenu() {
             </View>
           </View>
           <View className="flex-row flex-wrap gap-3 py-0.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={() => {
-                // TODO: Navigate to account settings screen
-              }}>
-              <Icon as={SettingsIcon} className="size-4" />
-              <Text>Manage Account</Text>
-            </Button>
+          {/*  <Button*/}
+          {/*    variant="outline"*/}
+          {/*    size="sm"*/}
+          {/*    onPress={() => {*/}
+          {/*      // TODO: Navigate to account settings screen*/}
+          {/*    }}>*/}
+          {/*    <Icon as={SettingsIcon} className="size-4" />*/}
+          {/*    <Text>Manage Account</Text>*/}
+          {/*  </Button>*/}
             <Button variant="outline" size="sm" className="flex-1" onPress={onSignOut}>
               <Icon as={LogOutIcon} className="size-4" />
               <Text>Sign Out</Text>
             </Button>
           </View>
         </View>
-        <Button
-          variant="ghost"
-          size="lg"
-          className="h-16 justify-start gap-3 rounded-none rounded-b-md px-3 sm:h-14"
-          onPress={() => {
-            // TODO: Navigate to add account screen
-          }}>
-          <View className="size-10 items-center justify-center">
-            <View className="size-7 items-center justify-center rounded-full border border-dashed border-border bg-muted/50">
-              <Icon as={PlusIcon} className="size-5" />
-            </View>
-          </View>
-          <Text>Add account</Text>
-        </Button>
+        {/*<Button*/}
+        {/*  variant="ghost"*/}
+        {/*  size="lg"*/}
+        {/*  className="h-16 justify-start gap-3 rounded-none rounded-b-md px-3 sm:h-14"*/}
+        {/*  onPress={() => {*/}
+        {/*    // TODO: Navigate to add account screen*/}
+        {/*  }}>*/}
+        {/*  <View className="size-10 items-center justify-center">*/}
+        {/*    <View className="size-7 items-center justify-center rounded-full border border-dashed border-border bg-muted/50">*/}
+        {/*      <Icon as={PlusIcon} className="size-5" />*/}
+        {/*    </View>*/}
+        {/*  </View>*/}
+        {/*  <Text>Add account</Text>*/}
+        {/*</Button>*/}
       </PopoverContent>
     </Popover>
   );
